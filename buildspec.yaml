@@ -1,0 +1,21 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      golang: latest
+    commands:
+      - echo "installing hugo"
+      - wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.104.3/hugo_0.104.3_linux-amd64.deb
+      - sudo dpkg -i hugo.deb
+      - hugo version
+
+  build:
+    commands:
+      - echo "building"
+      - hugo
+
+  post_build:
+    commands:
+      - echo "post_build started"
+      - aws s3 sync public/ $BUCKET_NAME --exclude "*.map" --delete
+      - aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
